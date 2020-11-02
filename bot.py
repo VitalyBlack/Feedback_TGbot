@@ -124,22 +124,5 @@ def handle(message):
     else:
         bot.send_message(message.chat.id, next_question)
 
-#кнопка, класс вопроса из двух переменных question_text, question_type; не просто текст вопросов хранится
-#в answers и questions, а хранится экземпляр класса вопроса. в Data новая переменная хранящая еще и тип вопроса
-
-
-
-# state = Userstate.waiting
-# def quiz(message):
-#     state = Userstate.questioning
-#     if(state == Userstate.questioning):
-#             poll = Poll(q_id, o_id)
-#             bot.send_poll(message.chat.id, poll)
-#             state = Userstate.waiting
-#
-#     elif(state == Userstate.waiting):
-#         def ignore(message):
-#             bot.send_message(message.chat.id, 'Ожидайте новый опрос')
-
 
 bot.polling()
