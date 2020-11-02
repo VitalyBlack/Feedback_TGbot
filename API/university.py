@@ -13,8 +13,9 @@ def getGroups(groupNumber) -> list:
     return response.json()
 
 
-def getTeachers(lastname="", firstname="", midname="") -> list:
-    namePattern = "%" + lastname + "%" + firstname + "%" + midname + "%"
+def getTeachers(searchPhraze) -> list:
+    namePattern = "%" + searchPhraze + "%"
+    namePattern.replace(' ', '%')
 
     s = requests.Session()
     s.mount('https://', host_header_ssl.HostHeaderSSLAdapter())

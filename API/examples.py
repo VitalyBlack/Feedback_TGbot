@@ -15,8 +15,12 @@ import API.quiz as apiQuiz
 #
 # bool = apiUni.createNewStudent(28055, 666)
 
-# testLessonId = 1
-# json = apiQuiz.getQuestions(testLessonId)
+testLessonId = 1
+json = apiQuiz.getQuestions(testLessonId)
+for element in json:
+    print(element)
+
+
 # if len(json) > 0:
 #     print(apiQuiz.getAnswers(testLessonId))
 #     testQuestionId = json[0]["question"]['id']
