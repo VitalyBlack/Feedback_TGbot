@@ -48,7 +48,7 @@ def begin(message):
     questions = api_quiz.getQuestions(testLessonId)
     questions.sort(key=lambda question: question.id)
     questions.reverse()
-    first_question = data.start(questions)
+    first_question = data.start(questions, testLessonId)
     ask_question(message.chat.id, first_question)
 
 
@@ -163,7 +163,7 @@ def handle(message, callback_data=None):
         if next_question is None:
             bot.send_message(message.chat.id, 'Спасибо за опрос!')
             for answer in data.answers:
-                api_quiz.postAnswer(testLessonId, answer.type, answer.answer, answer.question_id)
+                api_quiz.postAnswer(data.lessonId, answer.type, answer.answer, answer.question_id)
             del user_data[message.chat.id]
 
         else:

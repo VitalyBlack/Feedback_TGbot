@@ -54,8 +54,9 @@ class Data:
         self.current_question = self.questions.pop()
         return self.current_question
 
-    def start(self, questions):
+    def start(self, questions, lessonId):
         self.state = UserState.ASKING
+        self.lessonId = lessonId
         self.questions = questions.copy()
         self.current_question = self.questions.pop()
         return self.current_question
