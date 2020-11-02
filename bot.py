@@ -2,16 +2,14 @@ import telebot
 from config import TOKEN
 from utils import QuestionType, Question, RegistrationKeyboard, Data, UserState, NumericKeyboard
 import API.university as api_uni
+import API.quiz as api_quiz
 
 bot = telebot.TeleBot(TOKEN)
 
 user_data = {}
-test_questions = [
-    Question(1, 'Kak dela?', QuestionType.TEXT),
-    Question(2, 'Kak para?', QuestionType.NUMERIC),
-    Question(3, 'Kak?', QuestionType.TEXT),
-]
 
+#TODO УБРАТЬ ПОЗЖЕ
+testLessonId = 1
 
 # @bot.message_handler(commands=['start'])
 
@@ -47,15 +45,18 @@ def begin(message):
         print('Error')
         return
 
-    first_question = data.start(test_questions)
+    questions = api_quiz.getQuestions(testLessonId)
+    questions.sort(key=lambda question: question.id)
+    questions.reverse()
+    first_question = data.start(questions)
     ask_question(message.chat.id, first_question)
 
 
 def ask_question(chat_id, question):
-    if question.type == QuestionType.TEXT:
+    if QuestionType(question.type) is QuestionType.TEXT:
         bot.send_message(chat_id, question.text + ' (текстовый ответ)')
 
-    if question.type == QuestionType.NUMERIC:
+    if QuestionType(question.type) is QuestionType.NUMERIC:
         bot.send_message(chat_id, question.text + ' (выберите ответ по 10-балльной шкале)',
                          reply_markup=NumericKeyboard.keyboard)
 
@@ -115,6 +116,7 @@ def handle(message, callback_data=None):
                 return
 
         if len(teachers) > 1:
+            # TODO сделать кнопки для выбора преподавателей
             bot.send_message(message.chat.id, 'Уточните запрос, найдено несколько преподавателей:')
             for teacher in teachers:
                 bot.send_message(message.chat.id, str(teacher))
@@ -122,6 +124,10 @@ def handle(message, callback_data=None):
         return
 
     if data.state == UserState.STUDENT_1:
+        if callback_data:
+            # TODO юзер уже выбрал группу
+            return
+
         groupNumber = message.text
         groups = api_uni.getGroups(groupNumber)
         if len(groups) == 0:
@@ -140,6 +146,8 @@ def handle(message, callback_data=None):
                 return
 
         if len(groups) > 1:
+            # TODO сделать кнопки для выбора групп
+            data.groups = groups
             bot.send_message(message.chat.id, 'Уточните запрос, найдено несколько групп:')
             for group in groups:
                 bot.send_message(message.chat.id, str(group))
@@ -154,7 +162,8 @@ def handle(message, callback_data=None):
 
         if next_question is None:
             bot.send_message(message.chat.id, 'Спасибо за опрос!')
-            print(data.answers)
+            for answer in data.answers:
+                api_quiz.postAnswer(testLessonId, answer.type, answer.answer, answer.question_id)
             del user_data[message.chat.id]
 
         else:

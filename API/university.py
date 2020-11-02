@@ -8,7 +8,7 @@ def getGroups(groupNumber) -> list:
     s = requests.Session()
     s.mount('https://', host_header_ssl.HostHeaderSSLAdapter())
     response = s.get(BASE_URL + 'groups/' + groupNumber, verify=CERT_PATH, headers=HEADERS)
-    if response.status_code == 400:
+    if response.status_code != 200:
         return []
     return response.json()
 
@@ -20,7 +20,7 @@ def getTeachers(searchPhraze) -> list:
     s = requests.Session()
     s.mount('https://', host_header_ssl.HostHeaderSSLAdapter())
     response = s.get(BASE_URL + 'teachers/' + namePattern, verify=CERT_PATH, headers=HEADERS)
-    if response.status_code == 400:
+    if response.status_code != 200:
         return []
     return response.json()
 
@@ -34,7 +34,7 @@ def setTeacherChatId(teacherId, chatId) -> bool:
     s = requests.Session()
     s.mount('https://', host_header_ssl.HostHeaderSSLAdapter())
     response = s.patch(BASE_URL + 'teachers', data=data, verify=CERT_PATH, headers=HEADERS)
-    if response.status_code == 400:
+    if response.status_code != 200:
         return False
     return True
 
@@ -43,7 +43,7 @@ def getAllStudents() -> list:
     s = requests.Session()
     s.mount('https://', host_header_ssl.HostHeaderSSLAdapter())
     response = s.get(BASE_URL + 'students', verify=CERT_PATH, headers=HEADERS)
-    if response.status_code == 400:
+    if response.status_code != 200:
         return []
     return response.json()
 
@@ -64,6 +64,6 @@ def createNewStudent(groupId, telegramId, login="") -> bool:
     s = requests.Session()
     s.mount('https://', host_header_ssl.HostHeaderSSLAdapter())
     response = s.post(BASE_URL + 'students', data=studentData, verify=CERT_PATH, headers=HEADERS)
-    if response.status_code == 400:
+    if response.status_code != 200:
         return False
     return True
