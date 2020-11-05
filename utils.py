@@ -1,5 +1,6 @@
 import telebot
 from enum import Enum
+import API.quiz as api_quiz
 
 
 class QuestionType(Enum):
@@ -28,16 +29,17 @@ class UserState(Enum):
     STUDENT_1 = 7
     STUDENT_2 = 8
     STUDENT_3 = 9
+    ADDITIONAL_QUESTIONS = 10
 
 class Data:
-    def __init__(self):
+    def __init__(self, lessonId=None):
         self.state = UserState.WAITING
         self.questions = []
         self.answers = []
         self.current_question = 0
         self.teacher = None
         self.groups = None
-        self.lessonId = None
+        self.lessonId = lessonId
 
     def next_question(self, answer_text):
         self.answers.append(
@@ -54,9 +56,12 @@ class Data:
         self.current_question = self.questions.pop()
         return self.current_question
 
-    def start(self, questions, lessonId):
+    def start(self):
+        questions = api_quiz.getQuestions(self.lessonId)
+        questions.sort(key=lambda question: question.id)
+        questions.reverse()
+
         self.state = UserState.ASKING
-        self.lessonId = lessonId
         self.questions = questions.copy()
         self.current_question = self.questions.pop()
         return self.current_question
@@ -64,26 +69,10 @@ class Data:
 
 class NumericKeyboard:
     keyboard = telebot.types.InlineKeyboardMarkup()
-    numeric1 = telebot.types.InlineKeyboardButton(text="1", callback_data="1")
-    numeric2 = telebot.types.InlineKeyboardButton(text="2", callback_data="2")
-    numeric3 = telebot.types.InlineKeyboardButton(text="3", callback_data="3")
-    numeric4 = telebot.types.InlineKeyboardButton(text="4", callback_data="4")
-    numeric5 = telebot.types.InlineKeyboardButton(text="5", callback_data="5")
-    numeric6 = telebot.types.InlineKeyboardButton(text="6", callback_data="6")
-    numeric7 = telebot.types.InlineKeyboardButton(text="7", callback_data="7")
-    numeric8 = telebot.types.InlineKeyboardButton(text="8", callback_data="8")
-    numeric9 = telebot.types.InlineKeyboardButton(text="9", callback_data="9")
-    numeric10 = telebot.types.InlineKeyboardButton(text="10", callback_data="10")
-    keyboard.add(numeric1)
-    keyboard.add(numeric2)
-    keyboard.add(numeric3)
-    keyboard.add(numeric4)
-    keyboard.add(numeric5)
-    keyboard.add(numeric6)
-    keyboard.add(numeric7)
-    keyboard.add(numeric8)
-    keyboard.add(numeric9)
-    keyboard.add(numeric10)
+    for i in range(1, 11):
+        keyboard.add(
+            telebot.types.InlineKeyboardButton(text=str(i), callback_data=str(i))
+        )
 
 
 class RegistrationKeyboard:
@@ -92,3 +81,9 @@ class RegistrationKeyboard:
     kb_no = telebot.types.InlineKeyboardButton(text='Нет', callback_data='Нет')
     keyboard.add(kb_yes)
     keyboard.add(kb_no)
+
+
+class NoQuestionsMarkup:
+    keyboard = telebot.types.InlineKeyboardMarkup()
+    kb_button = telebot.types.InlineKeyboardButton(text="Не хочу ничего добавлять", callback_data="no_questions")
+    keyboard.add(kb_button)

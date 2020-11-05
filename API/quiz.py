@@ -46,6 +46,20 @@ def postAnswer(lessonId, type, answer, questionId, studentId=None) -> bool:
     return True
 
 
+def postNewQuestion(lessonId, text) -> bool:
+    answerData = {
+        "answer_type": 'questions',
+        "answer": text
+    }
+
+    s = requests.Session()
+    s.mount('https://', host_header_ssl.HostHeaderSSLAdapter())
+    response = s.post(BASE_URL + 'quiz/' + str(lessonId), data=answerData, verify=CERT_PATH, headers=HEADERS)
+    if response.status_code != 200:
+        return False
+    return True
+
+
 def getAnswers(lessonId) -> list:
     s = requests.Session()
     s.mount('https://', host_header_ssl.HostHeaderSSLAdapter())

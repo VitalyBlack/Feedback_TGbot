@@ -20,7 +20,6 @@ json = apiQuiz.getQuestions(testLessonId)
 for element in json:
     print(element)
 
-
 # if len(json) > 0:
 #     print(apiQuiz.getAnswers(testLessonId))
 #     testQuestionId = json[0]["question"]['id']

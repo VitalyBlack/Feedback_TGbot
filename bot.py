@@ -1,15 +1,16 @@
 import telebot
 from config import TOKEN
-from utils import QuestionType, Question, RegistrationKeyboard, Data, UserState, NumericKeyboard
-import API.university as api_uni
 import API.quiz as api_quiz
+import API.university as api_uni
+from utils import QuestionType, RegistrationKeyboard, Data, UserState, NumericKeyboard, NoQuestionsMarkup
 
 bot = telebot.TeleBot(TOKEN)
 
 user_data = {}
 
-#TODO УБРАТЬ ПОЗЖЕ
+# TODO УБРАТЬ ПОЗЖЕ
 testLessonId = 1
+
 
 # @bot.message_handler(commands=['start'])
 
@@ -28,7 +29,7 @@ def registration(message):
 
 @bot.message_handler(commands=['test'])
 def test(message):
-    data = Data()
+    data = Data(testLessonId)
     user_data[message.chat.id] = data
     bot.send_message(message.chat.id, 'Напишите /begin, чтобы начать')
 
@@ -45,26 +46,32 @@ def begin(message):
         print('Error')
         return
 
-    questions = api_quiz.getQuestions(testLessonId)
-    questions.sort(key=lambda question: question.id)
-    questions.reverse()
-    first_question = data.start(questions, testLessonId)
+    first_question = data.start()
     ask_question(message.chat.id, first_question)
 
 
 def ask_question(chat_id, question):
     if QuestionType(question.type) is QuestionType.TEXT:
-        bot.send_message(chat_id, question.text + ' (текстовый ответ)')
+        bot.send_message(chat_id, question.text + ' *(текстовый ответ)*', parse_mode='Markdown')
 
     if QuestionType(question.type) is QuestionType.NUMERIC:
-        bot.send_message(chat_id, question.text + ' (выберите ответ по 10-балльной шкале)',
-                         reply_markup=NumericKeyboard.keyboard)
+        bot.send_message(chat_id, question.text + ' *(выберите ответ по 10-балльной шкале)*',
+                         reply_markup=NumericKeyboard.keyboard, parse_mode='Markdown')
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_inline(call):
     if call.message:
         handle(call.message, call.data)
+
+
+def ask_for_questions(id):
+    bot.send_message(id,
+                     'Если вы хотите добавить новые вопросы к опросу,' +
+                     ' напишите текст вопроса с вопросительным знаком следующим сообщением' +
+                     ' либо **нажмите на кнопку, если не хотите добавлять вопрос**.',
+                     reply_markup=NoQuestionsMarkup.keyboard, parse_mode='Markdown')
+    pass
 
 
 @bot.message_handler(content_types=['text'])
@@ -161,18 +168,23 @@ def handle(message, callback_data=None):
             next_question = data.next_question(message.text)
 
         if next_question is None:
-            bot.send_message(message.chat.id, 'Спасибо за опрос!')
+            data.state = UserState.ADDITIONAL_QUESTIONS
+            ask_for_questions(message.chat.id)
             for answer in data.answers:
                 api_quiz.postAnswer(data.lessonId, answer.type, answer.answer, answer.question_id)
-            del user_data[message.chat.id]
-
+            data.questions = None
+            data.answers = None
         else:
             ask_question(message.chat.id, next_question)
         return
 
-    # до 10 кнопок. варианты для нового студента и препода (две кнопки при регистрации - студент или преподаватель).
+    if data.state == UserState.ADDITIONAL_QUESTIONS:
+        if callback_data:
+            bot.send_message(message.chat.id, 'Спасибо за прохождение опроса!')
+            del user_data[message.chat.id]
+        else:
+            api_quiz.postNewQuestion(data.lessonId, message.text)
+            ask_for_questions(message.chat.id)
 
-
-# у студента нужно узнать группу. дедлайн - до вторника.
 
 bot.polling()
