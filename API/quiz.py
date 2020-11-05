@@ -2,7 +2,7 @@ import requests
 from requests_toolbelt.adapters import host_header_ssl
 
 from API.config import BASE_URL, CERT_PATH, HEADERS
-from utils import Question
+from BOT.utils import Question
 
 
 def getQuestions(lessonId) -> list:

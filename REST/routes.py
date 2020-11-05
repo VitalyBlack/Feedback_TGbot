@@ -1,5 +1,5 @@
 import asyncio
-from bot import startPollForUser
+from BOT.bot import startPollForUser
 from REST import app
 
 @app.route('/')
