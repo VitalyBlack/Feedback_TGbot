@@ -1,4 +1,5 @@
 import telebot
+import asyncio
 from config import TOKEN
 import API.quiz as api_quiz
 import API.university as api_uni
@@ -10,6 +11,7 @@ user_data = {}
 
 # TODO УБРАТЬ ПОЗЖЕ
 testLessonId = 1
+testUserId = 176664413
 
 
 # @bot.message_handler(commands=['start'])
@@ -29,9 +31,12 @@ def registration(message):
 
 @bot.message_handler(commands=['test'])
 def test(message):
-    data = Data(testLessonId)
-    user_data[message.chat.id] = data
-    bot.send_message(message.chat.id, 'Напишите /begin, чтобы начать')
+    startPoll(message.chat.id, testLessonId)
+
+def startPoll(chatId, lessonId):
+    data = Data(lessonId)
+    user_data[chatId] = data
+    bot.send_message(chatId, 'Напишите /begin, чтобы начать')
 
 
 @bot.message_handler(commands=['begin'])
@@ -82,6 +87,7 @@ def handle(message, callback_data=None):
 
     data = user_data[message.chat.id]
 
+    print(message.chat.id)
     # if data.state != UserState.ASKING:
     #     print('Error')
     #     bot.send_message(message.chat.id, 'Ожидайте следующий опрос')
@@ -186,5 +192,15 @@ def handle(message, callback_data=None):
             api_quiz.postNewQuestion(data.lessonId, message.text)
             ask_for_questions(message.chat.id)
 
+def runBot():
+    print("bot start polling")
+    bot.polling()
+    print("bot start polling 2")
 
-bot.polling()
+# TODO удалить это позже
+async def startPollForUser():
+    startPoll(testUserId, testLessonId)
+
+
+
+# bot.polling()
