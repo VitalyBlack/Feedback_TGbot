@@ -4,6 +4,18 @@ import API.quiz as api_quiz
 import API.university as api_uni
 from BOT.utils import QuestionType, RegistrationKeyboard, Data, UserState, NumericKeyboard, NoQuestionsMarkup
 
+
+# TODO написать нормальную информацию о проекте
+ABOUT = """Информация о проекте"""
+
+HELP = """**Список доступных команд:**
+
+`/begin` - когда нужно начать опрос
+`/help` - чтобы получить список доступных комманд
+`/stop` - чтобы в любой момент сбросить диалог в исходное состояние
+`/register` - чтобы зарегистрироваться как студент или как преподаватель
+`/about` - Чтобы побольше узнать о проекте и его создателях"""
+
 bot = telebot.TeleBot(TOKEN)
 
 user_data = {}
@@ -13,7 +25,31 @@ testLessonId = 1
 testUserId = 176664413
 
 
-# @bot.message_handler(commands=['start'])
+@bot.message_handler(commands=['stop'])
+def stop(message):
+    if message.chat.id not in user_data:
+        return
+    data = user_data[message.chat.id]
+    if data.state == UserState.ASKING:
+        data.answers = None
+        data.questions = None
+        data.current_question = None
+        data.state = UserState.WAITING
+    else:
+        del user_data[message.chat.id]
+    return
+
+
+@bot.message_handler(commands=['help'])
+def stop(message):
+    bot.send_message(message.chat.id, HELP, parse_mode='Markdown')
+    return
+
+
+@bot.message_handler(commands=['about'])
+def stop(message):
+    bot.send_message(message.chat.id, ABOUT, parse_mode='Markdown')
+    return
 
 
 @bot.message_handler(commands=['register'])
@@ -31,6 +67,7 @@ def registration(message):
 @bot.message_handler(commands=['test'])
 def test(message):
     startPoll(message.chat.id, testLessonId)
+
 
 def startPoll(chatId, lessonId):
     data = Data(lessonId)
@@ -191,15 +228,23 @@ def handle(message, callback_data=None):
             api_quiz.postNewQuestion(data.lessonId, message.text)
             ask_for_questions(message.chat.id)
 
+
 def runBot():
     print("bot start polling")
     bot.polling()
     print("bot start polling 2")
 
-# TODO удалить это позже
-async def startPollForUser():
-    startPoll(testUserId, testLessonId)
+
+async def startPollForUsers(userIds, lessonId):
+    for userId in userIds:
+        startPoll(userId, lessonId)
 
 
+async def sendResultsToTeacher(teacherId, lessonId):
+    print(f"sendResultsToTeacher: {teacherId}, {lessonId}")
+    return
 
-# bot.polling()
+
+async def joinStudents(high_id, low_id):
+    print(f"joinStudents: {high_id}, {low_id}")
+    return
