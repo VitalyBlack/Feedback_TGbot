@@ -1,5 +1,5 @@
-import API.university as apiUni
-import API.quiz as apiQuiz
+import api.university as apiUni
+import api.quiz as apiQuiz
 
 # json = apiUni.getGroups('3')
 # for element in json:

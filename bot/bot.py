@@ -1,22 +1,12 @@
 import telebot
-from BOT.config import TOKEN
-import API.quiz as api_quiz
-import API.university as api_uni
-from BOT.utils import QuestionType, RegistrationKeyboard, Data, UserState, NumericKeyboard, NoQuestionsMarkup
+import api.quiz as api_quiz
+import api.university as api_uni
+from bot.utils import QuestionType, RegistrationKeyboard, Data, UserState, NumericKeyboard, NoQuestionsMarkup
 
+from resources.bot_token import BOT_TOKEN
+import resources.text as txt
 
-# TODO написать нормальную информацию о проекте
-ABOUT = """Информация о проекте"""
-
-HELP = """**Список доступных команд:**
-
-`/begin` - когда нужно начать опрос
-`/help` - чтобы получить список доступных комманд
-`/stop` - чтобы в любой момент сбросить диалог в исходное состояние
-`/register` - чтобы зарегистрироваться как студент или как преподаватель
-`/about` - Чтобы побольше узнать о проекте и его создателях"""
-
-bot = telebot.TeleBot(TOKEN)
+bot = telebot.TeleBot(BOT_TOKEN)
 
 user_data = {}
 
@@ -42,23 +32,23 @@ def stop(message):
 
 @bot.message_handler(commands=['help'])
 def stop(message):
-    bot.send_message(message.chat.id, HELP, parse_mode='Markdown')
+    bot.send_message(message.chat.id, txt.HELP, parse_mode='Markdown')
     return
 
 
 @bot.message_handler(commands=['about'])
 def stop(message):
-    bot.send_message(message.chat.id, ABOUT, parse_mode='Markdown')
+    bot.send_message(message.chat.id, txt.ABOUT, parse_mode='Markdown')
     return
 
 
 @bot.message_handler(commands=['register'])
 def registration(message):
     if message.chat.id in user_data:
-        bot.send_message(message.chat.id, "Вы не можете проходить регистрацию в данный момент.")
+        bot.send_message(message.chat.id, txt.CANNOT_REGISTER_NOW)
         return
 
-    bot.send_message(message.chat.id, 'Вы студент?', reply_markup=RegistrationKeyboard.keyboard)
+    bot.send_message(message.chat.id, txt.ARE_YOU_A_STUDENT, reply_markup=RegistrationKeyboard.keyboard)
     data = Data()
     data.state = UserState.REG_1
     user_data[message.chat.id] = data
@@ -72,13 +62,13 @@ def test(message):
 def startPoll(chatId, lessonId):
     data = Data(lessonId)
     user_data[chatId] = data
-    bot.send_message(chatId, 'Напишите /begin, чтобы начать')
+    bot.send_message(chatId, txt.WRITE_TO_BEGIN)
 
 
 @bot.message_handler(commands=['begin'])
 def begin(message):
     if message.chat.id not in user_data:
-        bot.send_message(message.chat.id, 'Ожидайте следующий опрос')
+        bot.send_message(message.chat.id, txt.WAIT_FOR_NEXT_POLL)
         return
 
     data = user_data[message.chat.id]
@@ -93,10 +83,10 @@ def begin(message):
 
 def ask_question(chat_id, question):
     if QuestionType(question.type) is QuestionType.TEXT:
-        bot.send_message(chat_id, question.text + ' *(текстовый ответ)*', parse_mode='Markdown')
+        bot.send_message(chat_id, question.text + txt.TEXT_ANSWER, parse_mode='Markdown')
 
     if QuestionType(question.type) is QuestionType.NUMERIC:
-        bot.send_message(chat_id, question.text + ' *(выберите ответ по 10-балльной шкале)*',
+        bot.send_message(chat_id, question.text + txt.NUMBER_ANSWER,
                          reply_markup=NumericKeyboard.keyboard, parse_mode='Markdown')
 
 
@@ -108,9 +98,7 @@ def callback_inline(call):
 
 def ask_for_questions(id):
     bot.send_message(id,
-                     'Если вы хотите добавить новые вопросы к опросу,' +
-                     ' напишите текст вопроса с вопросительным знаком следующим сообщением' +
-                     ' либо **нажмите на кнопку, если не хотите добавлять вопрос**.',
+                     txt.ADDITIONAL_QUESTIONS,
                      reply_markup=NoQuestionsMarkup.keyboard, parse_mode='Markdown')
     pass
 
@@ -118,7 +106,7 @@ def ask_for_questions(id):
 @bot.message_handler(content_types=['text'])
 def handle(message, callback_data=None):
     if message.chat.id not in user_data:
-        bot.send_message(message.chat.id, 'Ожидайте следующий опрос')
+        bot.send_message(message.chat.id, txt.WAIT_FOR_NEXT_POLL)
         return
 
     data = user_data[message.chat.id]
@@ -131,42 +119,42 @@ def handle(message, callback_data=None):
 
     if data.state == UserState.WAITING:
         # TODO кнопку для начала опроса
-        bot.send_message(message.chat.id, 'Нажмите на кнопку для начала опроса')
+        bot.send_message(message.chat.id, txt.PRESS_TO_BEGIN)
         return
 
     if data.state == UserState.REG_1:
         if callback_data:
             if (callback_data == 'Нет'):
                 data.state = UserState.TEACHER_1
-                bot.send_message(message.chat.id, 'Введите ФИО или часть ФИО')
+                bot.send_message(message.chat.id, txt.ENTER_FIO)
             else:
                 data.state = UserState.STUDENT_1
-                bot.send_message(message.chat.id, 'Введите Группу')
+                bot.send_message(message.chat.id, txt.ENTER_GROUP)
         else:
-            bot.send_message(message.chat.id, 'Нужно ответить на вопрос в предыдущем сообщении')
+            bot.send_message(message.chat.id, txt.ANSWER_LAST_QUESTION)
         return
 
     if data.state == UserState.TEACHER_1:
         fullname = message.text
         teachers = api_uni.getTeachers(fullname)
         if len(teachers) == 0:
-            bot.send_message(message.chat.id, 'Преподавателей по данному запросу не найдено. Попробуйте ещё раз.')
+            bot.send_message(message.chat.id, txt.NO_TEACHERS_FOUND)
             return
 
         if len(teachers) == 1:
             isSuccess = api_uni.setTeacherChatId(teachers[0]['id'], message.chat.id)
             if isSuccess:
-                bot.send_message(message.chat.id, 'Успешно зарегистрирован.')
+                bot.send_message(message.chat.id, txt.SUCCESS_REGISTER)
                 del user_data[message.chat.id]
                 return
             else:
-                bot.send_message(message.chat.id, 'Ошибка при сохранении пользователя. Обратитесь к администратору.')
+                bot.send_message(message.chat.id, txt.SAVE_USER_ERROR)
                 del user_data[message.chat.id]
                 return
 
         if len(teachers) > 1:
             # TODO сделать кнопки для выбора преподавателей
-            bot.send_message(message.chat.id, 'Уточните запрос, найдено несколько преподавателей:')
+            bot.send_message(message.chat.id, txt.TOO_MUCH_TEACHERS)
             for teacher in teachers:
                 bot.send_message(message.chat.id, str(teacher))
             return
@@ -180,24 +168,24 @@ def handle(message, callback_data=None):
         groupNumber = message.text
         groups = api_uni.getGroups(groupNumber)
         if len(groups) == 0:
-            bot.send_message(message.chat.id, 'Групп по данному запросу не найдено. Попробуйте ещё раз.')
+            bot.send_message(message.chat.id, txt.NO_GROUPS_FOUND)
             return
 
         if len(groups) == 1:
             isSuccess = api_uni.createNewStudent(groups[0]['id'], message.chat.id)
             if isSuccess:
-                bot.send_message(message.chat.id, 'Успешно зарегистрирован.')
+                bot.send_message(message.chat.id, txt.SUCCESS_REGISTER)
                 del user_data[message.chat.id]
                 return
             else:
-                bot.send_message(message.chat.id, 'Ошибка при сохранении пользователя. Обратитесь к администратору.')
+                bot.send_message(message.chat.id, txt.SAVE_USER_ERROR)
                 del user_data[message.chat.id]
                 return
 
         if len(groups) > 1:
             # TODO сделать кнопки для выбора групп
             data.groups = groups
-            bot.send_message(message.chat.id, 'Уточните запрос, найдено несколько групп:')
+            bot.send_message(message.chat.id, txt.TOO_MUCH_GROUPS)
             for group in groups:
                 bot.send_message(message.chat.id, str(group))
             return
@@ -222,7 +210,7 @@ def handle(message, callback_data=None):
 
     if data.state == UserState.ADDITIONAL_QUESTIONS:
         if callback_data:
-            bot.send_message(message.chat.id, 'Спасибо за прохождение опроса!')
+            bot.send_message(message.chat.id, txt.THANKS_FOR_POLL)
             del user_data[message.chat.id]
         else:
             api_quiz.postNewQuestion(data.lessonId, message.text)

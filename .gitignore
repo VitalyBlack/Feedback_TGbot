@@ -1,1 +1,2 @@
-BOT/config.py
+bot/config.py
+/resources/bot_token.py

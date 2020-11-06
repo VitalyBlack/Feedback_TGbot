@@ -2,8 +2,8 @@ import asyncio
 import flask
 from flask_cors import cross_origin
 
-from REST import app
-from BOT.bot import startPollForUsers, sendResultsToTeacher, joinStudents
+from rest import app
+from bot.bot import startPollForUsers, sendResultsToTeacher, joinStudents
 
 
 @app.route('/bot/start_poll', methods=['POST'])
