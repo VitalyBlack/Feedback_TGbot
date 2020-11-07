@@ -27,13 +27,16 @@ def getTeachers(searchPhraze) -> list:
 
 def setTeacherChatId(teacherId, chatId) -> bool:
     data = {
-        "id": teacherId,
-        "telegram_id": chatId
+        "id": int(teacherId),
+        "telegram_id": int(chatId)
     }
+
+    print(data)
 
     s = requests.Session()
     s.mount('https://', host_header_ssl.HostHeaderSSLAdapter())
     response = s.patch(BASE_URL + 'teachers', data=data, verify=CERT_PATH, headers=HEADERS)
+    print(response.status_code)
     if response.status_code != 200:
         return False
     return True

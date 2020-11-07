@@ -14,6 +14,7 @@ class Question:
         self.text = text
         self.type = type
 
+
 class Answer:
     def __init__(self, question_id, answer, type):
         self.question_id = question_id
@@ -30,6 +31,7 @@ class UserState(Enum):
     STUDENT_2 = 8
     STUDENT_3 = 9
     ADDITIONAL_QUESTIONS = 10
+
 
 class Data:
     def __init__(self, lessonId=None):
@@ -75,7 +77,9 @@ class NumericKeyboard:
 
 class RegistrationKeyboard:
     keyboard = telebot.types.InlineKeyboardMarkup()
-    keyboard.add(*[telebot.types.InlineKeyboardButton(text=str(name), callback_data=str(name)) for name in ['Да', 'Нет']])
+    keyboard.add(
+        *[telebot.types.InlineKeyboardButton(text=str(name), callback_data=str(name)) for name in ['Да', 'Нет']])
+
 
 def teacher_keyboard(teachers):
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
@@ -84,11 +88,16 @@ def teacher_keyboard(teachers):
         counter += 1
         if counter == 6:
             break
-        name = teacher['full_name']
+        original_name = teacher['full_name']
+        splited = original_name.split()
+        new_name = splited[0] + ' '
+        for other in splited[1:]:
+            new_name += other[1].upper() + '.'
         chair = teacher['chair']
         id = teacher['id']
-        keyboard.add(telebot.types.InlineKeyboardButton(text=f'{name}\n{chair}', callback_data=id))
+        keyboard.add(telebot.types.InlineKeyboardButton(text=f'{new_name}\n{chair}', callback_data=id))
     return keyboard
+
 
 def group_keyboard(groups):
     keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
@@ -101,6 +110,7 @@ def group_keyboard(groups):
         group_name = group['name']
         keyboard.add(telebot.types.InlineKeyboardButton(text=f'{group_name}', callback_data=group_id))
     return keyboard
+
 
 class NoQuestionsMarkup:
     keyboard = telebot.types.InlineKeyboardMarkup()
