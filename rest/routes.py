@@ -25,6 +25,7 @@ def start_poll():
     return "OK", 200
 
 
+# TODO по апишке доп. параметры
 @app.route('/bot/send_results', methods=['POST'])
 @cross_origin()
 def send_results():

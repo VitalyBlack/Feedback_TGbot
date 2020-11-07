@@ -66,7 +66,7 @@ def startPoll(chatId, lessonId):
     keyboard = telebot.types.InlineKeyboardMarkup()
     begin_quiz = telebot.types.InlineKeyboardButton(text="Начать опрос", callback_data="begin")
     keyboard.add(begin_quiz)
-    bot.send_message(chatId, txt.WRITE_TO_BEGIN, reply_markup=keyboard)
+    bot.send_message(chatId, txt.PRESS_TO_BEGIN, reply_markup=keyboard)
 
 
 @bot.message_handler(commands=['begin'])
@@ -264,11 +264,12 @@ async def startPollForUsers(userIds, lessonId):
         startPoll(userId, lessonId)
 
 
+# TODO
 async def sendResultsToTeacher(teacherId, lessonId):
     print(f"sendResultsToTeacher: {teacherId}, {lessonId}")
     return
 
-
+# TODO
 async def joinStudents(high_id, low_id):
     print(f"joinStudents: {high_id}, {low_id}")
     return
