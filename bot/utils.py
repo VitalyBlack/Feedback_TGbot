@@ -37,7 +37,7 @@ class Data:
         self.questions = []
         self.answers = []
         self.current_question = 0
-        self.teacher = None
+        self.teachers = None
         self.groups = None
         self.lessonId = lessonId
 
@@ -68,20 +68,39 @@ class Data:
 
 
 class NumericKeyboard:
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    for i in range(1, 11):
-        keyboard.add(
-            telebot.types.InlineKeyboardButton(text=str(i), callback_data=str(i))
-        )
+    keyboard = telebot.types.InlineKeyboardMarkup(row_width=5)
+    keyboard.add(*[telebot.types.InlineKeyboardButton(text=str(i), callback_data=str(i)) for i in [1, 2, 3, 4, 5]])
+    keyboard.add(*[telebot.types.InlineKeyboardButton(text=str(i), callback_data=str(i)) for i in [6, 7, 8, 9, 10]])
 
 
 class RegistrationKeyboard:
     keyboard = telebot.types.InlineKeyboardMarkup()
-    kb_yes = telebot.types.InlineKeyboardButton(text="Да", callback_data="Да")
-    kb_no = telebot.types.InlineKeyboardButton(text='Нет', callback_data='Нет')
-    keyboard.add(kb_yes)
-    keyboard.add(kb_no)
+    keyboard.add(*[telebot.types.InlineKeyboardButton(text=str(name), callback_data=str(name)) for name in ['Да', 'Нет']])
 
+def teacher_keyboard(teachers):
+    keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
+    counter = 0
+    for teacher in teachers:
+        counter += 1
+        if counter == 6:
+            break
+        name = teacher['full_name']
+        chair = teacher['chair']
+        id = teacher['id']
+        keyboard.add(telebot.types.InlineKeyboardButton(text=f'{name}\n{chair}', callback_data=id))
+    return keyboard
+
+def group_keyboard(groups):
+    keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
+    counter = 0
+    for group in groups:
+        counter += 1
+        if counter == 6:
+            break
+        group_id = group['id']
+        group_name = group['name']
+        keyboard.add(telebot.types.InlineKeyboardButton(text=f'{group_name}', callback_data=group_id))
+    return keyboard
 
 class NoQuestionsMarkup:
     keyboard = telebot.types.InlineKeyboardMarkup()
