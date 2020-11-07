@@ -35,7 +35,7 @@ class Data:
         self.questions = []
         self.answers = []
         self.current_question = 0
-        self.teacher = None
+        self.teachers = None
         self.groups = None
         self.lessonId = None
 
@@ -62,32 +62,37 @@ class Data:
 
 
 class NumericKeyboard:
-    keyboard = telebot.types.InlineKeyboardMarkup()
-    numeric1 = telebot.types.InlineKeyboardButton(text="1", callback_data="1")
-    numeric2 = telebot.types.InlineKeyboardButton(text="2", callback_data="2")
-    numeric3 = telebot.types.InlineKeyboardButton(text="3", callback_data="3")
-    numeric4 = telebot.types.InlineKeyboardButton(text="4", callback_data="4")
-    numeric5 = telebot.types.InlineKeyboardButton(text="5", callback_data="5")
-    numeric6 = telebot.types.InlineKeyboardButton(text="6", callback_data="6")
-    numeric7 = telebot.types.InlineKeyboardButton(text="7", callback_data="7")
-    numeric8 = telebot.types.InlineKeyboardButton(text="8", callback_data="8")
-    numeric9 = telebot.types.InlineKeyboardButton(text="9", callback_data="9")
-    numeric10 = telebot.types.InlineKeyboardButton(text="10", callback_data="10")
-    keyboard.add(numeric1)
-    keyboard.add(numeric2)
-    keyboard.add(numeric3)
-    keyboard.add(numeric4)
-    keyboard.add(numeric5)
-    keyboard.add(numeric6)
-    keyboard.add(numeric7)
-    keyboard.add(numeric8)
-    keyboard.add(numeric9)
-    keyboard.add(numeric10)
+    keyboard = telebot.types.InlineKeyboardMarkup(row_width=5)
+    keyboard.add(*[telebot.types.InlineKeyboardButton(text=str(i), callback_data=str(i)) for i in [1, 2, 3, 4, 5]])
+    keyboard.add(*[telebot.types.InlineKeyboardButton(text=str(i), callback_data=str(i)) for i in [6, 7, 8, 9, 10]])
 
 
 class RegistrationKeyboard:
     keyboard = telebot.types.InlineKeyboardMarkup()
-    kb_yes = telebot.types.InlineKeyboardButton(text="Да", callback_data="Да")
-    kb_no = telebot.types.InlineKeyboardButton(text='Нет', callback_data='Нет')
-    keyboard.add(kb_yes)
-    keyboard.add(kb_no)
+    keyboard.add(*[telebot.types.InlineKeyboardButton(text=str(name), callback_data=str(name)) for name in ['Да', 'Нет']])
+
+def teacher_keyboard(teachers):
+    keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
+    counter = 0
+    for teacher in teachers:
+        counter += 1
+        if counter == 6:
+            break
+        name = teacher['full_name']
+        chair = teacher['chair']
+        id = teacher['id']
+        keyboard.add(telebot.types.InlineKeyboardButton(text=f'{name}\n{chair}', callback_data=id))
+    return keyboard
+
+def group_keyboard(groups):
+    keyboard = telebot.types.InlineKeyboardMarkup(row_width=1)
+    counter = 0
+    for group in groups:
+        counter += 1
+        if counter == 6:
+            break
+        group_id = group['id']
+        group_name = group['name']
+        keyboard.add(telebot.types.InlineKeyboardButton(text=f'{group_name}', callback_data=group_id))
+    return keyboard
+
