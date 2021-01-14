@@ -1,5 +1,5 @@
-from rest import app
-from bot.bot import runBot
+from src.rest import app
+from src.bot.bot import runBot
 from threading import Thread
 
 
