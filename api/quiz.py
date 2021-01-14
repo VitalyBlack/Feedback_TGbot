@@ -1,8 +1,8 @@
 import requests
 from requests_toolbelt.adapters import host_header_ssl
 
-from src.resources.config import BASE_URL, CERT_PATH, HEADERS
-from src.bot.utils import Question
+from resources.config import BASE_URL, CERT_PATH, HEADERS
+from bot.utils import Question
 
 
 def getQuestions(lessonId) -> list:

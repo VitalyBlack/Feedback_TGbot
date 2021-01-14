@@ -1,6 +1,6 @@
 import telebot
 from enum import Enum
-import src.api.quiz as api_quiz
+import api.quiz as api_quiz
 
 
 class QuestionType(Enum):

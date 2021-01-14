@@ -1,4 +1,4 @@
-import src.api.quiz as apiQuiz
+import api.quiz as apiQuiz
 
 # json = apiUni.getGroups('3')
 # for element in json:

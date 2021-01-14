@@ -1,11 +1,11 @@
 import telebot
-import src.api.quiz as api_quiz
-import src.api.university as api_uni
-from src.bot.utils import QuestionType, RegistrationKeyboard, Data, UserState, NumericKeyboard, NoQuestionsMarkup, \
+import api.quiz as api_quiz
+import api.university as api_uni
+from bot.utils import QuestionType, RegistrationKeyboard, Data, UserState, NumericKeyboard, NoQuestionsMarkup, \
     teacher_keyboard, group_keyboard
 
-from src.resources.bot_token import BOT_TOKEN
-import src.resources.text as txt
+from resources.bot_token import BOT_TOKEN
+import resources.text as txt
 
 bot = telebot.TeleBot(BOT_TOKEN)
 
