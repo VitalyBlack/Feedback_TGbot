@@ -16,6 +16,12 @@ testLessonId = 1
 testUserId = 176664413
 
 
+@bot.message_handler(commands=['start'])
+def stop(message):
+    bot.send_message(message.chat.id, txt.ABOUT, parse_mode='Markdown')
+    bot.send_message(message.chat.id, txt.HELP, parse_mode='Markdown')
+
+
 @bot.message_handler(commands=['stop'])
 def stop(message):
     if message.chat.id not in user_data:
@@ -149,14 +155,14 @@ def handle(message, callback_data=None):
             print(int(id))
             for teacher in data.teachers:
                 if teacher['id'] == int(id):
-                    print('Я ЗАШЁЛ В УСЛОВИЕ')
+                    bot.send_message(message.chat.id, 'Найден 1 преподаватель: ' + teacher['full_name'])
                     isSuccess = api_uni.setTeacherChatId(int(id), message.chat.id)
                     if isSuccess:
                         bot.send_message(message.chat.id, 'Успешно зарегистрирован.')
                         del user_data[message.chat.id]
                         return
             bot.send_message(message.chat.id,
-                             'Ошибка при сохранении пользователя. Обратитесь к администратору.')
+                             txt.SAVE_USER_ERROR)
             del user_data[message.chat.id]
             return
 
@@ -168,6 +174,7 @@ def handle(message, callback_data=None):
             return
 
         if len(teachers) == 1:
+            bot.send_message(message.chat.id, 'Найден 1 преподаватель: ' + teachers[0]['full_name'])
             isSuccess = api_uni.setTeacherChatId(teachers[0]['id'], message.chat.id)
             if isSuccess:
                 bot.send_message(message.chat.id, txt.SUCCESS_REGISTER)
@@ -192,13 +199,14 @@ def handle(message, callback_data=None):
             id = callback_data
             for group in data.groups:
                 if group['id'] == int(id):
+                    bot.send_message(message.chat.id, 'Найдена 1 группа: ' + group['name'])
                     isSuccess = api_uni.createNewStudent(int(id), message.chat.id)
                     if isSuccess:
                         bot.send_message(message.chat.id, 'Успешно зарегистрирован.')
                         del user_data[message.chat.id]
                         return
             bot.send_message(message.chat.id,
-                             'Ошибка при сохранении пользователя. Обратитесь к администратору.')
+                             txt.SAVE_USER_ERROR)
             del user_data[message.chat.id]
             # TODO юзер уже выбрал группу
             return
@@ -210,6 +218,7 @@ def handle(message, callback_data=None):
             return
 
         if len(groups) == 1:
+            bot.send_message(message.chat.id, 'Найдена 1 группа: ' + groups[0]['name'])
             isSuccess = api_uni.createNewStudent(groups[0]['id'], message.chat.id)
             if isSuccess:
                 bot.send_message(message.chat.id, txt.SUCCESS_REGISTER)
